@@ -42,6 +42,7 @@ const HomeScreen = () => {
     webLoading,
     setWebLoading,
     loading,
+    setLoading,
   } = useContext(AuthContext);
 
   const [isKeyboardOpen, setKeyboardOpen] = useState(false);
@@ -52,13 +53,22 @@ const HomeScreen = () => {
   useEffect(() => {
     if (webLoading) {
       const timer = setTimeout(() => {
-        console.log("done");
         setWebLoading(false);
-      }, 14000);
+      }, 10000);
 
       return () => clearTimeout(timer);
     }
   }, [webLoading]);
+
+  useEffect(() => {
+    if (loading) {
+      const timer = setTimeout(() => {
+        setLoading(false);
+      }, 10000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
 
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(
@@ -89,6 +99,23 @@ const HomeScreen = () => {
 
     AsyncStorage.setItem("link", secureLink);
     setCanGoBack(navState.canGoBack);
+  };
+
+  const handleShouldStartLoadWithRequest = (request) => {
+    const { url } = request;
+
+    if (Platform.OS === "ios" && url.endsWith(".pdf")) {
+      Linking.openURL(url).catch(() =>
+        Toast.show({
+          type: "error",
+          text1: "Error",
+          text2: "Unable to open PDF.",
+        })
+      );
+
+      return false;
+    }
+    return true;
   };
 
   useEffect(() => {
@@ -135,8 +162,6 @@ const HomeScreen = () => {
       setIsRefreshing(false);
     }, 2000);
   }
-
-  console.log("webViewLink:", webViewLink);
 
   return (
     <ImageBackground source={background} style={{ flex: 1 }}>
@@ -199,20 +224,11 @@ const HomeScreen = () => {
               }}
               ref={webViewRef}
               style={{ flex: 1 }}
-              onLoadStart={() => {
-                setWebLoading(true);
-              }}
-              onLoadEnd={() => {
-                setWebLoading(false);
-              }}
-              onLoad={() => {
-                setWebLoading(false);
-              }}
-              onLoadProgress={() => {
-                setWebLoading(true);
-              }}
+              onLoadStart={() => setWebLoading(true)}
+              onLoadEnd={() => setWebLoading(false)}
               onNavigationStateChange={handleNavigationStateChange}
               allowsBackForwardNavigationGestures={true}
+              onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
               onError={() => {
                 Toast.show({
                   type: "error",
@@ -302,44 +318,37 @@ const styles = StyleSheet.create({
   needhelpText2: {
     fontFamily: "SemiBold",
     fontSize: 14,
-    color: "#27579D",
+    color: "#4785CF",
     textAlign: "center",
-    alignSelf: "center",
-    borderBottomWidth: 1,
-    borderColor: "#4785CF",
   },
   emailLinkcontainer: {
-    alignSelf: "center",
-    position: "absolute",
-    bottom: 48,
+    marginTop: "auto",
+    marginBottom: 30,
   },
   noInternetContainer: {
     flex: 1,
-    alignItems: "center",
     justifyContent: "center",
-    gap: 48,
+    alignItems: "center",
+    gap: 16,
+  },
+  connectionLostText: {
+    fontFamily: "Medium",
+    fontSize: 14,
+    color: "#4785CF",
+    alignSelf: "center",
   },
   refreshBtn: {
     backgroundColor: "#4785CF",
-    borderRadius: 12,
-    height: 48,
     alignItems: "center",
     justifyContent: "center",
-    width: 120,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 16,
+    marginTop: 10,
   },
   refreshBtnText: {
     color: "white",
-    fontFamily: "SemiBold",
-    fontSize: 16,
-    letterSpacing: 1,
-  },
-  connectionLostText: {
-    fontSize: 14,
-    color: "#27579D",
-    textAlign: "center",
-    fontFamily: "SemiBold",
-    alignSelf: "center",
-    marginBottom: 16,
+    fontFamily: "Medium",
   },
 });
 

@@ -20,6 +20,8 @@ var background = require("../../assets/images/background.png");
 var Icon = require("../../assets/images/OGLogo.png");
 var noInternet = require("../../assets/images/NoConnection.png");
 
+import LottieView from "lottie-react-native";
+
 // **components
 import CustomTextInput from "../Components/CustomTextInput";
 import { AuthContext } from "../Context/AuthContext";
@@ -27,6 +29,8 @@ import { WebView } from "react-native-webview";
 import LoadingModal from "../Components/LoadingModal";
 import Toast from "react-native-toast-message";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
+import * as SplashScreen from "expo-splash-screen";
 
 const DismissKeyboard = ({ children }) => (
   <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
@@ -39,6 +43,7 @@ const HomeScreen = () => {
     isConnected,
     Login,
     webViewLink,
+    setWebViewLink,
     webLoading,
     setWebLoading,
     loading,
@@ -54,7 +59,7 @@ const HomeScreen = () => {
     if (webLoading) {
       const timer = setTimeout(() => {
         setWebLoading(false);
-      }, 10000);
+      }, 6000);
 
       return () => clearTimeout(timer);
     }
@@ -91,11 +96,17 @@ const HomeScreen = () => {
   };
 
   const handleNavigationStateChange = (navState) => {
+    if (Platform.OS == "android" && !navState.loading) {
+      setWebLoading(false);
+    }
+
     const navStateLink = navState.url;
 
     let secureLink = navStateLink.startsWith("http://")
       ? navStateLink.replace("http://", "https://")
       : navStateLink;
+
+    setWebViewLink(secureLink);
 
     AsyncStorage.setItem("link", secureLink);
     setCanGoBack(navState.canGoBack);
@@ -112,10 +123,26 @@ const HomeScreen = () => {
           text2: "Unable to open PDF.",
         })
       );
-
       return false;
     }
-    return true;
+
+    if (
+      url.startsWith("https://expectingplus.com") ||
+      url.startsWith("https://player.vimeo.com") ||
+      url.endsWith(".mp3") ||
+      url.endsWith(".mp4")
+    ) {
+      return true;
+    }
+
+    Linking.openURL(url).catch(() =>
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Unable to open external link.",
+      })
+    );
+    return false;
   };
 
   useEffect(() => {
@@ -215,17 +242,31 @@ const HomeScreen = () => {
           </>
         ) : (
           <SafeAreaView style={{ flex: 1 }}>
-            <LoadingModal visible={webLoading} />
+            {webLoading && (
+              <LottieView
+                source={require("../../assets/webLoading.json")}
+                style={{ height: 12, width: "100%" }}
+                autoPlay
+                loop={true}
+              />
+            )}
             <WebView
               source={{
-                uri: webViewLink.startsWith("http://")
-                  ? webViewLink.replace("http://", "https://")
-                  : webViewLink,
+                uri: webViewLink,
               }}
               ref={webViewRef}
               style={{ flex: 1 }}
-              onLoadStart={() => setWebLoading(true)}
-              onLoadEnd={() => setWebLoading(false)}
+              onLoadStart={(e) => {
+                setWebLoading(true);
+              }}
+              onLoad={() => {
+                setWebLoading(false);
+                SplashScreen.hideAsync();
+              }}
+              onLoadEnd={() => {
+                setWebLoading(false);
+                SplashScreen.hideAsync();
+              }}
               onNavigationStateChange={handleNavigationStateChange}
               allowsBackForwardNavigationGestures={true}
               onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
@@ -349,6 +390,21 @@ const styles = StyleSheet.create({
   refreshBtnText: {
     color: "white",
     fontFamily: "Medium",
+  },
+  goHome: {
+    fontFamily: "Bold",
+    color: "#4785CF",
+    fontSize: 22,
+  },
+  goHomeButton: {
+    paddingLeft: 8,
+    paddingRight: 8,
+    height: 58,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    borderBottomWidth: 2,
+    borderColor: "#4785CF",
   },
 });
 

@@ -2,7 +2,7 @@
   "expo": {
     "name": "Expecting Plus",
     "slug": "ExpectingAndroid",
-    "version": "2.0.1",
+    "version": "2.0.6",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -11,6 +11,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.lifeevents.expectingplus"
@@ -29,6 +30,7 @@
       "eas": {
         "projectId": "1315a9de-0a12-40b9-acb3-29dff123a31b"
       }
-    }
+    },
+    "plugins": ["expo-font"]
   }
 }

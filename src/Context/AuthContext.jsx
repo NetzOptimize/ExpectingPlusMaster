@@ -32,6 +32,10 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     retrieveData();
+
+    // AsyncStorage.removeItem("link");
+    // SplashScreen.hideAsync();
+    // setWebViewLink(null);
   }, []);
 
   const retrieveData = async () => {
@@ -53,7 +57,7 @@ export const AuthProvider = ({ children }) => {
 
   function Login() {
     setWebLoading(true);
-    const loginLink = "https://expectingplus.com/login/";
+    const loginLink = "https://expectingplus.com/login";
     AsyncStorage.setItem("link", loginLink).then(() => {
       setWebViewLink(loginLink);
     });
@@ -124,6 +128,7 @@ export const AuthProvider = ({ children }) => {
         isConnected,
         Login,
         webViewLink,
+        setWebViewLink,
         setWebLoading,
         webLoading,
         loading,

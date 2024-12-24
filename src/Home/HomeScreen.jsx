@@ -12,6 +12,8 @@ import {
   Platform,
   BackHandler,
   ActivityIndicator,
+  Button,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -38,6 +40,8 @@ const DismissKeyboard = ({ children }) => (
   </TouchableWithoutFeedback>
 );
 
+const EXPECTINGPLUS_URL = "https://expectingplus.com";
+
 const HomeScreen = () => {
   const {
     isConnected,
@@ -54,6 +58,7 @@ const HomeScreen = () => {
   const webViewRef = React.useRef(null);
   const [canGoBack, setCanGoBack] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastLink, setLastLink] = useState(EXPECTINGPLUS_URL);
 
   useEffect(() => {
     if (webLoading) {
@@ -106,16 +111,25 @@ const HomeScreen = () => {
       ? navStateLink.replace("http://", "https://")
       : navStateLink;
 
+
     setWebViewLink(secureLink);
 
-    AsyncStorage.setItem("link", secureLink);
+    if (secureLink && !secureLink.startsWith("blob:") && !( secureLink.startsWith(EXPECTINGPLUS_URL) && secureLink.includes("/download") )) {
+      AsyncStorage.setItem("link", secureLink);
+      setLastLink(secureLink);
+    }
+
     setCanGoBack(navState.canGoBack);
   };
 
   const handleShouldStartLoadWithRequest = (request) => {
     const { url } = request;
+    
+    if (!request.isTopFrame) {
+      return true;
+    }
 
-    if (Platform.OS === "ios" && url.endsWith(".pdf")) {
+    if (url.includes(".pdf") || ( url.startsWith(EXPECTINGPLUS_URL) && url.includes("/download") )) {
       Linking.openURL(url).catch(() =>
         Toast.show({
           type: "error",
@@ -126,22 +140,37 @@ const HomeScreen = () => {
       return false;
     }
 
-    if (
-      url.startsWith("https://expectingplus.com") ||
-      url.startsWith("https://player.vimeo.com") ||
-      url.endsWith(".mp3") ||
-      url.endsWith(".mp4")
-    ) {
+
+    if (url.startsWith(EXPECTINGPLUS_URL) || url.startsWith("https://www.expectingplus.com")) {
       return true;
     }
+    
+    if (url.startsWith("blob:")) {
+      Alert.alert("Feature Unavailable", "The download and export feature is currently unavailable in the app. Log in via your browser to proceed with downloading or exporting.", [
+        {
+          text: "Later",
+          style: "cancel",
+        },
+        {
+          text: "Login",
+          onPress: () => {
+            Linking.openURL(lastLink);
+          },
+        },
+      ]);
+      return false;
+    }
 
-    Linking.openURL(url).catch(() =>
-      Toast.show({
-        type: "error",
-        text1: "Error",
-        text2: "Unable to open external link.",
-      })
-    );
+    Linking.openURL(url).catch(async () => {
+        Toast.show({
+          type: "error",
+          text1: "Error",
+          text2: "Unable to open external link.",
+        });
+      
+      return false;
+    });
+
     return false;
   };
 
@@ -190,66 +219,67 @@ const HomeScreen = () => {
     }, 2000);
   }
 
+
   return (
     <ImageBackground source={background} style={{ flex: 1 }}>
       {isConnected ? (
         !webViewLink ? (
-          <>
-            <LoadingModal visible={loading} />
-            <DismissKeyboard>
-              <SafeAreaView style={{ flex: 1 }}>
-                <View style={styles.header}>
-                  <View style={styles.row}>
-                    <Text style={styles.logoTextStyle}>Expecting </Text>
-                    <Image source={Icon} style={{ width: 42, height: 42 }} />
+            <>
+              <LoadingModal visible={loading} />
+              <DismissKeyboard>
+                <SafeAreaView style={{ flex: 1 }}>
+                  <View style={styles.header}>
+                    <View style={styles.row}>
+                      <Text style={styles.logoTextStyle}>Expecting </Text>
+                      <Image source={Icon} style={{ width: 42, height: 42 }} />
+                    </View>
+                    <Text style={styles.welcomeText}>
+                      Welcome to Expecting Plus, your maternity health companion.
+                    </Text>
                   </View>
-                  <Text style={styles.welcomeText}>
-                    Welcome to Expecting Plus, your maternity health companion.
-                  </Text>
-                </View>
 
-                <View style={styles.codeAreaContainer}>
-                  <Text style={styles.titleText}>
-                    Enter the access code provided to you
-                  </Text>
-
-                  <CustomTextInput />
-
-                  <TouchableOpacity onPress={Login}>
-                    <Text style={styles.alreadyUserText}>
-                      Already an app user? Log in here
+                  <View style={styles.codeAreaContainer}>
+                    <Text style={styles.titleText}>
+                      Enter the access code provided to you
                     </Text>
-                  </TouchableOpacity>
-                </View>
 
-                {!isKeyboardOpen && (
-                  <TouchableOpacity
-                    style={styles.emailLinkcontainer}
-                    onPress={() =>
-                      Linking.openURL("mailto:help@lifeeventsinc.com?")
-                    }
-                  >
-                    <Text style={styles.needhelpText}>
-                      Need help signing in? Send us a note at:
-                    </Text>
-                    <Text style={styles.needhelpText2}>
-                      help@lifeeventsinc.com
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </SafeAreaView>
-            </DismissKeyboard>
-          </>
+                    <CustomTextInput />
+
+                    <TouchableOpacity onPress={Login}>
+                      <Text style={styles.alreadyUserText}>
+                        Already an app user? Log in here
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {!isKeyboardOpen && (
+                    <TouchableOpacity
+                      style={styles.emailLinkcontainer}
+                      onPress={() =>
+                        Linking.openURL("mailto:help@lifeeventsinc.com?")
+                      }
+                    >
+                      <Text style={styles.needhelpText}>
+                        Need help signing in? Send us a note at:
+                      </Text>
+                      <Text style={styles.needhelpText2}>
+                        help@lifeeventsinc.com
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </SafeAreaView>
+              </DismissKeyboard>
+            </>
         ) : (
           <SafeAreaView style={{ flex: 1 }}>
-            {webLoading && (
+            {/* {webLoading && (
               <LottieView
                 source={require("../../assets/webLoading.json")}
-                style={{ height: 12, width: "100%" }}
+                style={{ height: 4, width: "100%" }}
                 autoPlay
                 loop={true}
               />
-            )}
+            )}  */}
             <WebView
               source={{
                 uri: webViewLink,
@@ -270,7 +300,7 @@ const HomeScreen = () => {
               onNavigationStateChange={handleNavigationStateChange}
               allowsBackForwardNavigationGestures={true}
               onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
-              onError={() => {
+              onError={(e) => {
                 Toast.show({
                   type: "error",
                   text1: "Network Error",
@@ -281,6 +311,7 @@ const HomeScreen = () => {
                   webViewRef.current.reload();
                 }
               }}
+              originWhitelist={['*']}
               javaScriptEnabled={true}
               domStorageEnabled={true}
               sharedCookiesEnabled={true}

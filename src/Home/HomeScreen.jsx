@@ -124,12 +124,12 @@ const HomeScreen = () => {
 
   const handleShouldStartLoadWithRequest = (request) => {
     const { url } = request;
-    
+
     if (!request.isTopFrame) {
       return true;
     }
 
-    if (url.includes(".pdf") || ( url.startsWith(EXPECTINGPLUS_URL) && url.includes("/download") )) {
+    if (url.includes(".pdf")) {
       Linking.openURL(url).catch(() =>
         Toast.show({
           type: "error",
@@ -140,12 +140,10 @@ const HomeScreen = () => {
       return false;
     }
 
-
-    if (url.startsWith(EXPECTINGPLUS_URL) || url.startsWith("https://www.expectingplus.com")) {
-      return true;
-    }
-    
-    if (url.startsWith("blob:")) {
+    if (
+      url.startsWith("blob:") ||
+      (Platform.OS === "ios" && url.startsWith(EXPECTINGPLUS_URL) && url.includes("/download"))
+    ) {
       Alert.alert("Feature Unavailable", "The download and export feature is currently unavailable in the app. Log in via your browser to proceed with downloading or exporting.", [
         {
           text: "Later",
@@ -159,6 +157,10 @@ const HomeScreen = () => {
         },
       ]);
       return false;
+    }
+
+    if (url.startsWith(EXPECTINGPLUS_URL) || url.startsWith("https://www.expectingplus.com")) {
+      return true;
     }
 
     Linking.openURL(url).catch(async () => {

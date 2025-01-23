@@ -124,6 +124,10 @@ const HomeScreen = () => {
 
   const handleShouldStartLoadWithRequest = (request) => {
     const { url } = request;
+    
+    if (Platform.OS == "android") {
+      return true;
+    }
 
     if (!request.isTopFrame) {
       return true;
@@ -221,6 +225,57 @@ const HomeScreen = () => {
     }, 2000);
   }
 
+  const handleMessage = (event) => {
+    const data = event.nativeEvent.data;
+    
+    if (Platform.OS == "android" && data === 'export-button-clicked') {
+      Alert.alert("Feature Unavailable", "The download and export feature is currently unavailable in the app. Log in via your browser to proceed with downloading or exporting.", [
+        {
+          text: "Later",
+          style: "cancel",
+        },
+        {
+          text: "Login",
+          onPress: () => {
+            Linking.openURL(lastLink);
+          },
+        },
+      ]);
+    }
+  };
+
+  const injectedJavaScript = `
+    // Ensure listener is added only once
+    if (!window.isClickListenerAdded) {
+      window.isClickListenerAdded = true;
+
+      // Observe all clicks in the document
+      document.addEventListener('click', function(event) {
+        const target = event.target;
+        // Check if the clicked element is a button or contains a button ancestor
+        const button = target.tagName === 'BUTTON' ? target : target.closest('button');
+        if (button) {
+          const buttonText = (button.textContent || button.innerText).trim().toLowerCase();
+
+          // Check for specific text matches
+          if (buttonText === 'loading...building export file' || buttonText === 'loading...construyendo archivo de exportación') {
+            event.preventDefault(); // Prevent the default action
+            if (!button.dataset.clicked) {
+              button.dataset.clicked = true; // Prevent duplicate processing
+              button.remove();
+              window.ReactNativeWebView.postMessage('export-button-clicked');
+            }
+          }
+
+          
+        }
+        
+      });
+    }
+    true; // Required for injectedJavaScript to execute
+  `;
+
+  
 
   return (
     <ImageBackground source={background} style={{ flex: 1 }}>
@@ -299,6 +354,7 @@ const HomeScreen = () => {
                 setWebLoading(false);
                 SplashScreen.hideAsync();
               }}
+              onMessage={handleMessage}
               onNavigationStateChange={handleNavigationStateChange}
               allowsBackForwardNavigationGestures={true}
               onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
@@ -317,6 +373,7 @@ const HomeScreen = () => {
               javaScriptEnabled={true}
               domStorageEnabled={true}
               sharedCookiesEnabled={true}
+              injectedJavaScript={injectedJavaScript}
             />
           </SafeAreaView>
         )

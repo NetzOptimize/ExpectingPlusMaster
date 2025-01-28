@@ -2,7 +2,7 @@
   "expo": {
     "name": "Expecting Plus",
     "slug": "ExpectingAndroid",
-    "version": "2.0.9",
+    "version": "2.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -21,6 +21,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+      "versionCode": 8,
       "package": "com.lifeevents.expectingplus"
     },
     "web": {

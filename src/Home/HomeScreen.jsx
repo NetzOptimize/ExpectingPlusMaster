@@ -327,7 +327,7 @@ const HomeScreen = () => {
             </>
         ) : (
           <SafeAreaView style={{ flex: 1 }}>
-            {!webLoading && (
+            {webLoading && (
               <LottieView
                 source={require("../../assets/webLoading.json")}
                 style={{ height: 10, width: '100%'}}

@@ -2,7 +2,7 @@
   "expo": {
     "name": "Expecting Plus",
     "slug": "ExpectingAndroid",
-    "version": "2.1.0",
+    "version": "2.1.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -14,14 +14,17 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.lifeevents.expectingplus"
+      "bundleIdentifier": "com.lifeevents.expectingplus",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "versionCode": 8,
+      "versionCode": 9,
       "package": "com.lifeevents.expectingplus"
     },
     "web": {
@@ -32,6 +35,8 @@
         "projectId": "1315a9de-0a12-40b9-acb3-29dff123a31b"
       }
     },
-    "plugins": ["expo-font"]
+    "plugins": [
+      "expo-font"
+    ]
   }
 }

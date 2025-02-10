@@ -275,8 +275,6 @@ const HomeScreen = () => {
     true; // Required for injectedJavaScript to execute
   `;
 
-  
-
   return (
     <ImageBackground source={background} style={{ flex: 1 }}>
       {isConnected ? (
@@ -329,12 +327,14 @@ const HomeScreen = () => {
             </>
         ) : (
           <SafeAreaView style={{ flex: 1 }}>
-            {webLoading && (
+            {!webLoading && (
               <LottieView
                 source={require("../../assets/webLoading.json")}
-                style={{ height: 8, width: "100%" }}
+                style={{ height: 10, width: '100%'}}
                 autoPlay
                 loop={true}
+                speed={0.65}
+                resizeMode="cover"
               />
             )} 
             <WebView

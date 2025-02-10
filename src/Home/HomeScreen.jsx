@@ -60,15 +60,15 @@ const HomeScreen = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastLink, setLastLink] = useState(EXPECTINGPLUS_URL);
 
-  useEffect(() => {
-    if (webLoading) {
-      const timer = setTimeout(() => {
-        setWebLoading(false);
-      }, 6000);
+  // useEffect(() => {
+  //   if (webLoading) {
+  //     const timer = setTimeout(() => {
+  //       setWebLoading(false);
+  //     }, 6000);
 
-      return () => clearTimeout(timer);
-    }
-  }, [webLoading]);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [webLoading]);
 
   useEffect(() => {
     if (loading) {
@@ -329,14 +329,14 @@ const HomeScreen = () => {
             </>
         ) : (
           <SafeAreaView style={{ flex: 1 }}>
-            {/* {webLoading && (
+            {webLoading && (
               <LottieView
                 source={require("../../assets/webLoading.json")}
-                style={{ height: 4, width: "100%" }}
+                style={{ height: 8, width: "100%" }}
                 autoPlay
                 loop={true}
               />
-            )}  */}
+            )} 
             <WebView
               source={{
                 uri: webViewLink,
@@ -344,7 +344,7 @@ const HomeScreen = () => {
               ref={webViewRef}
               style={{ flex: 1 }}
               onLoadStart={(e) => {
-                setWebLoading(true);
+                // setWebLoading(true);
               }}
               onLoad={() => {
                 setWebLoading(false);
@@ -354,7 +354,10 @@ const HomeScreen = () => {
                 setWebLoading(false);
                 SplashScreen.hideAsync();
               }}
-              onMessage={handleMessage}
+              onMessage={() => {
+                console.log('s')
+                handleMessage()
+              }}
               onNavigationStateChange={handleNavigationStateChange}
               allowsBackForwardNavigationGestures={true}
               onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}

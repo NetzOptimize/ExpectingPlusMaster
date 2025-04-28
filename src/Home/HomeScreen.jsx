@@ -41,6 +41,8 @@ const DismissKeyboard = ({ children }) => (
 );
 
 const EXPECTINGPLUS_URL = "https://expectingplus.com";
+const EXPECTINGPLUS_LOGIN_URL = "https://expectingplus.com/st-lukes/login/";
+const EXPECTINGPLUS_REGISTER_URL = "https://expectingplus.com/st-lukes/register/";
 
 const HomeScreen = () => {
   const {
@@ -114,8 +116,8 @@ const HomeScreen = () => {
       const storedCode = await AsyncStorage.getItem("regCode");
   
       if (
-        (lastLink === "https://expectingplus.com/st-lukes/login/" ||
-          lastLink === "https://expectingplus.com/st-lukes/register/") &&
+        (lastLink === EXPECTINGPLUS_LOGIN_URL ||
+          lastLink === EXPECTINGPLUS_REGISTER_URL) &&
         storedCode
       ) {
         secureLink = secureLink + "?regcode=" + storedCode;

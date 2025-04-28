@@ -100,27 +100,44 @@ const HomeScreen = () => {
     return false;
   };
 
-  const handleNavigationStateChange = (navState) => {
-    if (Platform.OS == "android" && !navState.loading) {
-      setWebLoading(false);
-    }
-
-    const navStateLink = navState.url;
-
-    let secureLink = navStateLink.startsWith("http://")
-      ? navStateLink.replace("http://", "https://")
-      : navStateLink;
-
-
-    setWebViewLink(secureLink);
-
-    if (secureLink && !secureLink.startsWith("blob:") && !( secureLink.startsWith(EXPECTINGPLUS_URL) && secureLink.includes("/download") )) {
-      AsyncStorage.setItem("link", secureLink);
-      setLastLink(secureLink);
-    }
-
-    setCanGoBack(navState.canGoBack);
-  };
+    const handleNavigationStateChange = async (navState) => {
+      if (Platform.OS == "android" && !navState.loading) {
+        setWebLoading(false);
+      }
+  
+      const navStateLink = navState.url;
+  
+      let secureLink = navStateLink.startsWith("http://")
+        ? navStateLink.replace("http://", "https://")
+        : navStateLink;
+  
+      const storedCode = await AsyncStorage.getItem("regCode");
+  
+      if (
+        (lastLink === "https://expectingplus.com/st-lukes/login/" ||
+          lastLink === "https://expectingplus.com/st-lukes/register/") &&
+        storedCode
+      ) {
+        secureLink = secureLink + "?regcode=" + storedCode;
+      }
+  
+      setWebViewLink(secureLink);
+  
+      if (
+        secureLink &&
+        !secureLink.startsWith("blob:") &&
+        !(
+          secureLink.startsWith(EXPECTINGPLUS_URL) &&
+          secureLink.includes("/download")
+        )
+      ) {
+        AsyncStorage.setItem("link", secureLink);
+        setLastLink(secureLink);
+      }
+  
+      setCanGoBack(navState.canGoBack);
+    };
+  
 
   const handleShouldStartLoadWithRequest = (request) => {
     const { url } = request;

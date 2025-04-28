@@ -68,6 +68,7 @@ export const AuthProvider = ({ children }) => {
     setWebLoading(true);
     setLoading(true);
     const TIMEOUT_DURATION = 10000;
+    AsyncStorage.removeItem("regCode");
 
     try {
       const response = await axios.get(url, {
@@ -80,6 +81,7 @@ export const AuthProvider = ({ children }) => {
       setCode("");
       setLoading(false);
       const codeGeneratedLink = response.data.site_url + "?regcode=" + code;
+      await AsyncStorage.setItem("regCode", code);
 
       let secureLink = codeGeneratedLink.startsWith("http://")
         ? codeGeneratedLink.replace("http://", "https://")
